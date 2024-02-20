@@ -15,29 +15,29 @@
  */
 package wiremock.grpc;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.wiremock.grpc.dsl.WireMockGrpc.*;
-import static org.wiremock.grpc.dsl.WireMockGrpc.method;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.wiremock.grpc.GrpcExtensionFactory;
+import org.wiremock.grpc.dsl.WireMockGrpcService;
 
 import com.example.grpc.GreetingServiceGrpc;
 import com.example.grpc.HelloRequest;
 import com.example.grpc.HelloResponse;
+import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
-import org.wiremock.grpc.GrpcExtensionFactory;
-import org.wiremock.grpc.dsl.WireMockGrpcService;
 import wiremock.grpc.client.GreetingsClient;
 
 public class GrpcTest {
@@ -46,29 +46,34 @@ public class GrpcTest {
   ManagedChannel channel;
   GreetingsClient greetingsClient;
 
-  @RegisterExtension
-  public static WireMockExtension wm =
-      WireMockExtension.newInstance()
-          .options(
-              wireMockConfig()
-                      .dynamicPort()
-                      .withRootDirectory("src/test/resources/wiremock")
-                      .extensions(new GrpcExtensionFactory())
-              )
-          .build();
+  static WireMockServer wm = new WireMockServer(wireMockConfig()
+      .dynamicPort()
+      .withRootDirectory("src/test/resources/wiremock")
+      .extensions(new GrpcExtensionFactory())
+  );
+
+  @BeforeAll
+  static void beforeAll() {
+    wm.start();
+  }
 
   @BeforeEach
   void init() {
     mockGreetingService =
-        new WireMockGrpcService(new WireMock(wm.getPort()), GreetingServiceGrpc.SERVICE_NAME);
+        new WireMockGrpcService(new WireMock(wm.port()), GreetingServiceGrpc.SERVICE_NAME);
 
-    channel = ManagedChannelBuilder.forAddress("localhost", wm.getPort()).usePlaintext().build();
+    channel = ManagedChannelBuilder.forAddress("localhost", wm.port()).usePlaintext().build();
     greetingsClient = new GreetingsClient(channel);
   }
 
   @AfterEach
   void tearDown() {
     channel.shutdown();
+  }
+
+  @AfterAll
+  static void afterAll() {
+    wm.stop();
   }
 
   @Test

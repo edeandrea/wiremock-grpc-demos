@@ -28,9 +28,9 @@ allprojects {
 
   ext {
     versions = [
-      wiremock: "3.3.1",
-      wiremockGrpc: "0.3.0",
-      grpc    : "1.59.0"
+      wiremock: "3.4.1",
+      wiremockGrpc: "0.5.0",
+      grpc    : "1.61.1"
     ]
   }
 }
@@ -44,7 +44,7 @@ dependencies {
 
   testImplementation "org.wiremock:wiremock:$versions.wiremock"
   testImplementation "org.wiremock:wiremock-grpc-extension:$versions.wiremockGrpc"
-  testImplementation(platform('org.junit:junit-bom:5.10.0'))
+  testImplementation(platform('org.junit:junit-bom:5.10.2'))
   testImplementation "org.junit.jupiter:junit-jupiter"
   testImplementation "org.hamcrest:hamcrest-core:2.2"
   testImplementation "org.hamcrest:hamcrest-library:2.2"
@@ -54,7 +54,7 @@ dependencies {
 
 protobuf {
   protoc {
-    artifact = "com.google.protobuf:protoc:3.24.3"
+    artifact = "com.google.protobuf:protoc:3.25.3"
   }
 
   plugins {
@@ -89,6 +89,6 @@ test {
 }
 
 wrapper {
-  gradleVersion = '8.0.1'
+  gradleVersion = '8.6'
   distributionType = Wrapper.DistributionType.BIN
 }
